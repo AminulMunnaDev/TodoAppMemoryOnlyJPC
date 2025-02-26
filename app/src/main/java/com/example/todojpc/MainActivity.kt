@@ -10,6 +10,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import com.example.todojpc.ui.theme.TODOJPCTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,13 +18,14 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val todoViewModel = ViewModelProvider(this)[TodoViewModel::class.java]
         setContent {
             TODOJPCTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = androidx.compose.material3.MaterialTheme.colorScheme.background
                 ) {
-                    TodoListPage()
+                    TodoListPage(todoViewModel)
                 }
             }
         }

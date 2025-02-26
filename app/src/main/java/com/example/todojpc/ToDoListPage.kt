@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,11 +40,11 @@ import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TodoListPage(modifier: Modifier = Modifier) {
-    val todoList = getFakeToDo()
+fun TodoListPage(viewModel: TodoViewModel) {
+    val todoList by viewModel.todoList.observeAsState()
     var inputText by remember { mutableStateOf("") }
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxHeight()
             .padding(8.dp)
     ) {
@@ -67,25 +68,40 @@ fun TodoListPage(modifier: Modifier = Modifier) {
                     inputText = it
                 })
             Button(
-                onClick = { },
+                onClick = {
+                    viewModel.addTodo(inputText)
+                    inputText = ""
+                },
             ) {
                 Text(text = "Add")
             }
         }
 
-        LazyColumn(
-            content = {
-                itemsIndexed(todoList) { index: Int, item: ToDo ->
-                    TodoItem(item)
-                }
+        todoList?.let {
+            LazyColumn(
+                content = {
+                    itemsIndexed(it) { index: Int, item: ToDo ->
+                        TodoItem(item,onDelete = {
+                            viewModel.deleteTodo(item.id)
 
-            })
+                        })
+                    }
+
+                })
+        } ?: (
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "No Todo Items",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+                )
     }
 }
 
 @SuppressLint("SimpleDateFormat")
 @Composable
-fun TodoItem(item: ToDo) {
+fun TodoItem(item: ToDo,onDelete : () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,7 +129,7 @@ fun TodoItem(item: ToDo) {
             )
         }
         IconButton(
-            onClick = { },
+            onClick = onDelete,
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.delete_icon),
